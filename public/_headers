@@ -2,11 +2,6 @@
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: default-src 'self' 
-  Content-Security-Policy: img-src 'self'
-  Content-Security-Policy: script-src 'self'
-  Content-Security-Policy: style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com https://fonts.googleapis.com
-  Content-Security-Policy: font-src https://fonts.cdnfonts.com https://fonts.googleapis.com
-  Content-Security-Policy: connect-src 'self' https://api.met.no https://api.kartverket.no
+  Content-Security-Policy: default-src 'self';img-src 'self';script-src 'self';style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com https://fonts.googleapis.com;font-src https://fonts.cdnfonts.com https://fonts.googleapis.com;connect-src 'self' https://api.met.no https://api.kartverket.no
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 */
