@@ -8,7 +8,7 @@
       </colgroup>
       <thead>
         <tr>
-          <th>Prognose 08-20</th>
+          <th>Prognose kl. 8-20</th>
           <th v-for="date in days" :key="date">{{ formatDay(date) }}</th>
         </tr>
       </thead>
@@ -135,7 +135,6 @@ th, td {
   border: 1px solid #ddd;
   padding: 4px 8px;
   text-align: center;
-  text-transform: capitalize;
 }
 th:first-child,
 td:first-child,
