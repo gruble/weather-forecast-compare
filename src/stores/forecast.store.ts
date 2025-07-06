@@ -33,7 +33,7 @@ async function fetchForecasts(locations: Location[]) {
   } finally {
     isLoading.value = false;
   }
-  console.log("Ferdig med å hente varsler");
+  console.log("Ferdig med å hente værvarsel");
 }
 
 watch(

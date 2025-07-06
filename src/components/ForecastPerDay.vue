@@ -26,16 +26,16 @@
           </td>
           <td v-for="date in days" :key="date" class="timeline-cell">
             <div v-if="get06ZEntry(forecast, date)">
-              <img
+              <img class="weather-icon"
                 v-if="get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code"
                 :src="`assets/icons/${get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code}.svg`"
                 :alt="get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code"
-                width="40"
-                height="40"
               />
-              <div v-else>-</div>
+              <div v-if="showTempAndPrecipitation" class="temp-and-precipitation">
+                <span>{{ getTemperature(forecast, date)}}</span>
+                <span>{{ getPrecipitation(forecast, date)}}</span>
+              </div>
             </div>
-            <div v-else>-</div>
           </td>
         </tr>
       </tbody>
@@ -50,6 +50,9 @@
       Legg til predefinerte steder 
       <nve-icon slot="prefix" name="Favorite"></nve-icon>
     </nve-button>
+    <nve-checkbox :checked="showTempAndPrecipitation" @sl-change="toggleTempAndPrecipitation()">
+      Vis temperatur og nedbør
+    </nve-checkbox>
   </div>
 </template>
 
@@ -60,6 +63,15 @@ import { removeLocation, removeAllLocations, addPremiumLocations, allPremiumAdde
 import type { CompleteForecast } from "../models/complete-forecast";
 import 'nve-designsystem/components/nve-button/nve-button.component.js';
 import 'nve-designsystem/components/nve-icon/nve-icon.component.js';
+import 'nve-designsystem/components/nve-checkbox/nve-checkbox.component.js';
+
+const showTempAndPrecipitation = ref(false);
+showTempAndPrecipitation.value = JSON.parse(localStorage.getItem("showTempAndPrecipitation") || "false");
+
+function toggleTempAndPrecipitation() {
+  showTempAndPrecipitation.value = !showTempAndPrecipitation.value;
+  localStorage.setItem("showTempAndPrecipitation", JSON.stringify(showTempAndPrecipitation.value));
+}
 
 // Finn alle unike datoer med 06:00Z-prognose
 const days = computed(() => {
@@ -114,6 +126,56 @@ function get06ZEntry(forecast: CompleteForecast, date: string) {
   );
 }
 
+function get12ZEntry(forecast: CompleteForecast, date: string) {
+  return forecast.properties.timeseries.find(
+    (entry) => entry.time === `${date}T12:00:00Z`
+  );
+}
+
+function getMin(numbers: (number|undefined)[]): number|undefined { 
+  const validNumbers = numbers.filter(n => n !== undefined);
+  if (validNumbers.length === 0) return undefined;
+  return Math.min(...validNumbers as number[]);
+}
+
+function getMax(numbers: (number|undefined)[]): number|undefined { 
+  const validNumbers = numbers.filter(n => n !== undefined);
+  if (validNumbers.length === 0) return undefined;
+  return Math.max(...validNumbers as number[]);
+}
+
+function getTemperature(forecast: CompleteForecast, date: string): string {
+  const prognosis06to12 = get06ZEntry(forecast, date)?.data.next_6_hours?.details;
+  const prognosis12to18 = get12ZEntry(forecast, date)?.data.next_6_hours?.details;
+  const minTemp = getMin([prognosis06to12?.air_temperature_min, prognosis12to18?.air_temperature_min]);
+  const maxTemp = getMax([prognosis06to12?.air_temperature_max, prognosis12to18?.air_temperature_max]);
+  return formatNumbers(minTemp, maxTemp, "°C");
+}
+
+function getPrecipitation(forecast: CompleteForecast, date: string): string {
+  const prognosis06to12 = get06ZEntry(forecast, date)?.data.next_6_hours?.details;
+  const prognosis12to18 = get12ZEntry(forecast, date)?.data.next_6_hours?.details;
+  const minPrecipitation = getMin([prognosis06to12?.precipitation_amount_min, prognosis12to18?.precipitation_amount_min]);
+  const maxPrecipitation = getMax([prognosis06to12?.precipitation_amount_max, prognosis12to18?.precipitation_amount_max]);
+  return formatNumbers(minPrecipitation, maxPrecipitation, "mm");
+}
+
+function formatNumbers(value1: number | undefined, value2: number | undefined, unit: string): string {
+  const formatted1 = formatNumber(value1);
+  const formatted2 = formatNumber(value2);
+  if (formatted1 == formatted2) {
+    return `${formatted1}${unit}`;
+  }
+  return `${formatted1}-${formatted2}${unit}`;
+}
+
+function formatNumber(value: number | undefined): string {
+  if (value === undefined || isNaN(value)) {
+    return "?";
+  }
+  return value.toFixed(0);
+}
+
 function formatDay(date: string) {
   const d = new Date(date);
   const weekday = d.toLocaleDateString("nb-NO", { weekday: "short" });
@@ -124,17 +186,25 @@ function formatDay(date: string) {
 </script>
 
 <style scoped>
+.timeline-table {
+  overflow-x: auto;
+  max-height: 86vh;
+}
 table {
   border-collapse: collapse;
   width: 100%;
-  overflow-x: auto;
-  /* table-layout: auto; */
 }
 th, td {
   font: var(--body-small);
   border: 1px solid #ddd;
-  padding: 4px 8px;
+  padding: 4px 4px;
   text-align: center;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: white; /* eller ønsket bakgrunnsfarge */
+  z-index: 2;
 }
 th:first-child,
 td:first-child,
@@ -150,9 +220,20 @@ td:first-child,
 .toolbar {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 .new-location {
   background: lightgreen;
   transition: background 0.5s;
+}
+.temp-and-precipitation {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: x-small;
+}
+.weather-icon {
+  width: 3rem;
+  height: 3rem;
 }
 </style>
