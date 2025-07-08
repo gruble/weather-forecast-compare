@@ -8,7 +8,7 @@
       </colgroup>
       <thead>
         <tr>
-          <th>Prognose kl. 8-20</th>
+          <th>Kl. 8-20</th>
           <th v-for="date in days" :key="date">{{ formatDay(date) }}</th>
         </tr>
       </thead>
@@ -19,23 +19,24 @@
           :class="{ 'new-location': newLocations.includes(locationName) }"
         >
           <td>
-            <nve-button @click="removeLocation(locationName)" size="small" variant="text">
-              <nve-icon name="delete"></nve-icon>
-            </nve-button>
             <a :href="getUrl(forecast)" target="_blank">{{ locationName }}</a>
           </td>
           <td v-for="date in days" :key="date" class="timeline-cell">
-            <div v-if="get06ZEntry(forecast, date)">
               <img class="weather-icon"
                 v-if="get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code"
-                :src="`assets/icons/${get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code}.svg`"
+                :src="`/assets/icons/${get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code}.svg`"
                 :alt="get06ZEntry(forecast, date)?.data.next_12_hours?.summary.symbol_code"
               />
               <div v-if="showTempAndPrecipitation" class="temp-and-precipitation">
                 <span>{{ getTemperature(forecast, date)}}</span>
                 <span>{{ getPrecipitation(forecast, date)}}</span>
               </div>
-            </div>
+            
+          </td>
+          <td>
+            <nve-button @click="removeLocation(locationName)" size="small" variant="text">
+              <nve-icon name="delete"></nve-icon>
+            </nve-button>
           </td>
         </tr>
       </tbody>
@@ -195,9 +196,9 @@ table {
   width: 100%;
 }
 th, td {
-  font: var(--body-small);
+  font: var(--body-medium);
   border: 1px solid #ddd;
-  padding: 4px 4px;
+  padding: 1px 2px;
   text-align: center;
 }
 thead th {
@@ -209,12 +210,9 @@ thead th {
 th:first-child,
 td:first-child,
 .location-col {
-  width: 1%;
-  min-width: 60px;
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 50px;
+  max-width: 80px; 
+  word-break: break-word;
   text-align: left;
 }
 .toolbar {
@@ -226,14 +224,32 @@ td:first-child,
   background: lightgreen;
   transition: background 0.5s;
 }
-.temp-and-precipitation {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  font-size: x-small;
+@media screen and (min-width: 500px) {
+  .temp-and-precipitation {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: x-small;
+  }
+}
+@media screen and (max-width: 499px) {
+  .temp-and-precipitation {
+    display: none;
+  }
+  nve-checkbox {
+    display: none;
+  }
 }
 .weather-icon {
-  width: 3rem;
-  height: 3rem;
+  /* width: 1.5rem;
+  height: 1.5rem; */
+    display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 3rem;
+}
+nve-button {
+  min-width: 2rem;
+  min-height: 2rem;
 }
 </style>
